@@ -2,15 +2,15 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
-
+const path = require('path')
 const isProduction = process.env.npm_lifecycle_event === 'build'
 
 module.exports = {
   entry: './src',
   devtool: !isProduction && 'source-map',
-  output:{
-    publicPath: '/assets'
-  },
+  // output:{
+  //   publicPath: 'assets/'
+  // },
   module: {
     rules: [
       {
@@ -49,6 +49,8 @@ module.exports = {
   ],
   devServer: {
     stats: 'minimal',
-    overlay: true
+    overlay: true,
+    // publicPath: '.src/',
+    // contentBase: path.join(__dirname, 'assets'),
   }
 }
