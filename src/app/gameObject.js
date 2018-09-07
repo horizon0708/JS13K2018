@@ -1,8 +1,7 @@
-
-
 export default class GameObject {
   constructor(){
     const entity = arguments[0];
+    this.id = uuidv4();
     this.x = entity.x;
     this.y = entity.y;
     this.width = 8;
@@ -13,7 +12,7 @@ export default class GameObject {
 
     this.show = true;
     this.invincible = false;
-    this.invisibleTimer = 3000;
+    this.invincibleTimer = 3000;
     this.frequency = 200;
 
     if(entity.hasOwnProperty('team')){
@@ -42,6 +41,13 @@ export default class GameObject {
     this.invincible = true;
     setTimeout(()=>{
       this.invincible = false;
-    }, this.invisibleTimer);
+    }, this.invincibleTimer);
   }
+}
+
+//https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+function uuidv4() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  )
 }

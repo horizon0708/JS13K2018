@@ -22,34 +22,54 @@ export default class {
 
   render() {
     let { gameState, gameObjects } = this;
-    gameObjects.forEach(o => {
       if (gameState.activeWorld !== -1) {
-        this.renderWorld(o, 0, gameState.activeWorld);
+        this.renderWorld(gameObjects, 0, gameState.activeWorld);
         // this.renderWorld(o, 1, gameState.activeWorld);
         // this.renderWorld(o, 2, gameState.activeWorld);
         // this.renderWorld(o, 3, gameState.activeWorld);
       }
-    });
+      if (gameState.activeWorld === -1) {
+        this.renderStartScreen();
+      }
+      if (gameState.activeWorld === -2) {
+        // render all worlds, so we can fade out or do stuff
+        this.renderWorld(gameObjects, 0, 0);
+        this.renderWorld(o, 1, 1);
+        this.renderWorld(o, 2, 2);
+        this.renderWorld(o, 3, 3);
+        this.renderEnding();
+      }
   }
 
-  renderUI() {}
+  renderUI() {
+    const { health, level, gameTimer,  }
+  }
 
-  renderWorld(gameObject, worldNumber, activeWorld) {
+  renderWorld(gameObjects, worldNumber, activeWorld) {
     let { ctx, worldRect } = this;
-    if (gameObject.world === worldNumber && gameObject.loaded) {
-      ctx.globalCompositeOperation = "source-over";
-      this.ctx.fillStyle = "#FF0000";
-        // ctx.fillRect(0,0,64,64);
-      this.ctx.fillRect(...worldRect[worldNumber]);
-      ctx.globalCompositeOperation = "source-atop";
-      ctx.drawImage(gameObject.image, gameObject.x, gameObject.y);
-      ctx.globalCompositeOperation = "source-over";
-      ctx.globalAlpha = activeWorld === worldNumber ? 0 : 0.5;
+    ctx.globalCompositeOperation = "source-over";
+    // this.ctx.fillStyle = "#FF0000";
+    ctx.fillStyle = "#304566";
+    ctx.fillRect(...worldRect[worldNumber]);
+    ctx.globalCompositeOperation = "source-atop";
+    gameObjects.filter(o => o.world === worldNumber && o.loaded).forEach(o => {
+      ctx.drawImage(o.image, o.x, o.y);
+    });
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = activeWorld === worldNumber ? 0 : 0.5;
 
-      // for some reason using rgba values for fillstyle does not work.
-      ctx.fillStyle = "#304566";
-      ctx.fillRect(...worldRect[worldNumber]);
-      ctx.globalAlpha = 1;
-    }
+    // for some reason using rgba values for fillstyle does not work.
+    ctx.fillStyle = "#304566";
+    ctx.fillRect(...worldRect[worldNumber]);
+    ctx.globalAlpha = 1;
+  }
+
+  renderStartScreen() {
+    // TODO: start screen
+  }
+
+  renderEnding() {
+    // TODO: fade out and render ending
+
   }
 }
