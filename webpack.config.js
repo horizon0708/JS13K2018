@@ -4,6 +4,9 @@ const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const path = require('path')
 const isProduction = process.env.npm_lifecycle_event === 'build'
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const ClosureCompilerPlugin = require('webpack-closure-compiler');
+const reservedNames = require("uglify-js/tools/domprops.json")
 
 module.exports = {
   entry: './src',
@@ -33,6 +36,21 @@ module.exports = {
       // }
     ]
   },
+  // optimization: { 
+  //   minimizer: [
+  //     new UglifyJsPlugin({
+  //       uglifyOptions: {
+  //         // compress: true
+  //         // keep_fnames: true,
+  //         // mangle: {
+  //         //   properties: {
+  //         //     reserved: reservedNames
+  //         //   }
+  //         // }
+  //       }
+  //     }),
+  //   ]
+  // },
   plugins: [
     new HtmlWebpackPlugin({
       template: 'src/index.html',
@@ -41,11 +59,19 @@ module.exports = {
       },
       inlineSource: isProduction && '\.(js|css)$'
     }),
+    new ClosureCompilerPlugin({
+      compiler: {
+        language_in: 'ECMASCRIPT6',
+        language_out: 'ECMASCRIPT5',
+        compilation_level: 'ADVANCED'
+      },
+    }),
     new HtmlWebpackInlineSourcePlugin(),
     new OptimizeCssAssetsPlugin({}),
     new MiniCssExtractPlugin({
       filename: '[name].css'
     })
+    
   ],
   devServer: {
     stats: 'minimal',

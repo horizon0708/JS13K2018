@@ -1,6 +1,6 @@
 var lastTime = timestamp();
 
-function timestamp () {
+export function timestamp () {
   return window.performance && window.performance.now ?
     window.performance.now() :
     Date.now();
@@ -24,7 +24,7 @@ function raf (fn) {
   });
 }
 
-exports.start = function (fn) {
+export default function (fn) {
   return raf(function tick (dt) {
     fn(dt);
     raf(tick);

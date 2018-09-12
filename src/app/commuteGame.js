@@ -3,14 +3,11 @@ import random from "./rand";
 import { car, heroCar } from "./entities";
 import GameObject from "./gameObject";
 import { bindUp, bindDown } from "./input";
-import BaseGame from './baseGame';
+import BaseGame from "./baseGame";
 
-export default class CommuteGame extends BaseGame{
-  constructor(gameObjects, gameState, input) {
-    super(gameObjects, gameState, input);
-    this.level = 5;
-    this.speedInterval = 10;
-    this.baseSpeed = 10;
+export default class CommuteGame extends BaseGame {
+  constructor(gameObjects, gameState) {
+    super(gameObjects, gameState);
 
     this.baseSpawn = this.baseSpeed * 400;
     this.spawnInterval = this.getSpeed() * 10;
@@ -27,101 +24,75 @@ export default class CommuteGame extends BaseGame{
   }
 
   start() {
+    const { heroX, ySpawn } = this;
     this.state = 1;
-    this.spawnHero();
-    this.spawnObjects();
-    bindUp(()=>this.goUp());
-    bindDown(()=>this.goDown());
+    this.spawn(heroCar, heroX, ySpawn[1]);
+    this.setSpawnInteval(() => this.spawnCar());
+    bindUp(() => this.goUp());
+    bindDown(() => this.goDown());
   }
 
   update(dt) {
-    const { state, world, gameObjects } = this;
-    if (state === 1) {
-      this.moveEnemies(dt);
+    const { state, world, gameObjects, gameState } = this;
+    if (gameState.ended) {
+      this.end();
+    } else if (state === 1 && gameState.activeWorld.includes(world)) {
+      if (this.spawnRef === null) {
+        this.setSpawnInteval(() => this.spawnCar());
+      }
+      this.moveEnemies(dt, -1, 0);
       let collisionInfo = checkCollision(gameObjects, world);
       if (collisionInfo) {
         // take out one heart
-
+        this.gameState.health--;
         this.destroy(collisionInfo[1]);
       }
+    } else {
+      if (this.spawnRef) {
+        clearInterval(this.spawnRef);
+        this.gameObjects.forEach((o, i) => {
+          if (o.world === world && o.team === 1) {
+            this.gameObjects.splice(i, 1);
+          }
+        });
+        this.spawnRef = null;
+      }
     }
+
     this.destroyOutOfBound();
   }
 
-  end() {
-    clearInterval(this.spawn);
-  }
-
   goUp() {
-    const { gameObjects, world, ySpawn, yInterval } = this;
-    const heroIndex = gameObjects.findIndex(
-      o => o.world === world && o.team === 0
-    );
-    if (heroIndex > -1 && gameObjects[heroIndex].y > ySpawn[0]) {
-      gameObjects[heroIndex].y -= yInterval;
+    const { ySpawn, yInterval, state, gameState, world } = this;
+    if (state === 1 && gameState.activeWorld.includes(world)) {
+      const hero = this.getHero();
+      if (hero && hero.y > ySpawn[0]) {
+        hero.y -= yInterval;
+      }
     }
   }
 
   goDown() {
-    const { gameObjects, world, ySpawn, yInterval } = this;
-    const heroIndex = gameObjects.findIndex(
-      o => o.world === world && o.team === 0
-    );
-    if (heroIndex > -1 && gameObjects[heroIndex].y < ySpawn[2]) {
-      gameObjects[heroIndex].y += yInterval;
+    const { ySpawn, yInterval, state, gameState,world } = this;
+    if (state === 1 && gameState.activeWorld.includes(world)) {
+      const hero = this.getHero();
+      if (hero && hero.y < ySpawn[2]) {
+        hero.y += yInterval;
+      }
     }
-  }
-
-  spawnHero() {
-    const { heroX, ySpawn, gameObjects } = this;
-    const hero = new GameObject(heroCar, heroX, ySpawn[1]);
-    gameObjects.push(hero);
-  }
-
-  spawnObjects() {
-    //spawn enemies
-    this.spawnCar();
-    this.spawn = setInterval(() => {
-      this.spawnCar();
-    }, this.getSpawnTime());
   }
 
   spawnCar() {
-    console.log(this.gameObjects);
-    if (this.level > 1) {
-      var posInt = random.int(3);
-      var newPos = [...this.ySpawn];
+    const { ySpawn, xSpawn, gameState } = this;
+    // console.log(this.gameObjects);
+    const posInt = random.int(3);
+    if (gameState.level - gameState.baseLevel > 0) {
+      var newPos = [...ySpawn];
       newPos.splice(posInt, 1);
-      var newObject = new GameObject(car, this.xSpawn, newPos[0]);
-      var secondCar = new GameObject(car, this.xSpawn, newPos[1]);
-      this.gameObjects.push(newObject);
-      this.gameObjects.push(secondCar);
+      this.spawn(car, xSpawn, newPos[0]);
+      this.spawn(car, xSpawn, newPos[1]);
     } else {
-      var posInt = random.int(3);
-      var newObject = new GameObject(car, this.xSpawn, this.ySpawn[posInt]);
-      this.gameObjects.push(newObject);
+      this.spawn(car, xSpawn, ySpawn[posInt]);
     }
-  }
-
-  moveEnemies(dt) {
-    this.gameObjects.forEach(o => {
-      if (o.world === this.world && o.team === 1) {
-        o.x -= this.getSpeed() * dt;
-      }
-    });
-  }
-
-  getSpawnTime() {
-    var speed = this.baseSpawn - this.spawnInterval * this.level;
-    // var speed = this.baseSpawn -  this.getSpeed() * this.level * 10;
-    if (speed < this.spawnFloor) {
-      return this.spawnFloor;
-    }
-    // return Math.abs(speed);
-    return speed;
-  }
-
-  getSpeed() {
-    return this.baseSpeed + this.speedInterval * this.level;
   }
 }

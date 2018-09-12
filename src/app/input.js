@@ -1,7 +1,5 @@
 export const bindInput = (fn, keycode) => {
-
-
-  window.addEventListener('keypress', function (e) {
+  window.addEventListener('keydown', function (e) {
     if(e.keyCode === keycode){
       fn();
     }
@@ -22,4 +20,10 @@ export const bindLeft = (fn) => {
 
 export const bindRight = (fn) => {
   return bindInput(fn, 39);
+}
+
+export const bindAny = (fn) => {
+  window.addEventListener('keydown', function (e) {
+fn();
+  }, false);
 }
